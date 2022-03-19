@@ -1,43 +1,41 @@
+import Axios from 'axios'
+import { useState } from 'react'
+import { Routes , 
+          BrowserRouter, 
+          Route } from "react-router-dom";
+import Navbar from "./components/Navbar"
 
 function App() {
+
+  const [productList, setProductList] = useState([])
+  const [showProducts, setShowProducts] = useState(false)
+  const getProducts = () => {
+    if(!showProducts){
+      setShowProducts(true)
+      Axios.get('http://localhost:3001/products').then((response) => {
+        setProductList(response.data)
+      })
+    }
+  }
+  getProducts()
   return (
-    <div className="App container">
-      <h1>Shop</h1>
-      <div className="information">
-        {/* Product Name */}
-        <div className="mb-3">
-          <label htmlFor="product_name" className="form-label">
-            Product Name :
-          </label>
-          <input type="text" className="form-control" placeholder="Product Name"></input>
-        </div>
-        {/* Product Desc */}
-        <div className="mb-3">
-          <label htmlFor="product_desc" className="form-label">
-            Product Desc :
-          </label>
-          <input type="text" className="form-control" placeholder="Product Desc"></input>
-        </div>
-        {/* Product Tel */}
-        <div className="mb-3">
-          <label htmlFor="product_tel" className="form-label">
-            Tel :
-          </label>
-          <input type="text" className="form-control" placeholder="Tel"></input>
-        </div>
-        {/* Product Address */}
-        <div className="mb-3">
-          <label htmlFor="product_address" className="form-label">
-          Address :
-          </label>
-          <input type="text" className="form-control" placeholder="Address"></input>
-        </div>
-      </div>
-      <div className="pull-right">
-        <button className="btn btn-success">Add Product</button>
-      </div>
-    </div>
-  );
+    <>
+      <BrowserRouter>
+        <Navbar/>
+        <Routes >
+          <Route path="/" />
+
+          
+        </Routes >
+      </BrowserRouter>
+
+      
+    </>
+  )
 }
+
+const Layout = () => {
+  return <h1>Home</h1>;
+};
 
 export default App;
