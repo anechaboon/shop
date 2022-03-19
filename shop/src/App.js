@@ -1,41 +1,24 @@
-import Axios from 'axios'
-import { useState } from 'react'
-import { Routes , 
-          BrowserRouter, 
-          Route } from "react-router-dom";
-import Navbar from "./components/Navbar"
+import React from 'react';
+import './App.css';
+import Navbar from './components/Navbar';
+import { BrowserRouter as Router, Routes , Route } from 'react-router-dom';
+import Home from './pages/Home';
+import Reports from './pages/Reports';
+import Products from './pages/Products';
 
 function App() {
-
-  const [productList, setProductList] = useState([])
-  const [showProducts, setShowProducts] = useState(false)
-  const getProducts = () => {
-    if(!showProducts){
-      setShowProducts(true)
-      Axios.get('http://localhost:3001/products').then((response) => {
-        setProductList(response.data)
-      })
-    }
-  }
-  getProducts()
   return (
     <>
-      <BrowserRouter>
-        <Navbar/>
+      <Router>
+        <Navbar />
         <Routes >
-          <Route path="/" />
-
-          
+          <Route path='/' exact component={Home} />
+          <Route path='/reports' component={Reports} />
+          <Route path='/products' component={Products} />
         </Routes >
-      </BrowserRouter>
-
-      
+      </Router>
     </>
-  )
+  );
 }
-
-const Layout = () => {
-  return <h1>Home</h1>;
-};
 
 export default App;
