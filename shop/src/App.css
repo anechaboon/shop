@@ -17,3 +17,18 @@
   justify-content: center;
   font-size: 3rem;
 }
+.container{
+  margin-top: 2em;
+}
+.pull-r{
+  float: right;
+}
+.pull-l{
+  float: left;
+}
+.hide{
+  display: none;
+}
+.hover:hover{
+  cursor: pointer;
+}
