@@ -16,6 +16,8 @@ function Shop() {
 
   const [shopList, setShopList] = useState([])
   const [showShops, setShowShops] = useState(false)
+
+  // get all shop
   const getShops = () => {
     if(!showShops){
       setShowShops(true)
@@ -26,6 +28,7 @@ function Shop() {
   }
   getShops()
 
+  // add new shop
   const addShop = () => {
     Axios.post('http://localhost:3001/shop', {
       shop_name:shopName,
@@ -45,6 +48,7 @@ function Shop() {
     });
   }
 
+  // get data shop to edit
   const editShop = (id) => {
     Axios.get(`http://localhost:3001/shop?id=${id}`).then((response) => {
       const data = response.data[0]
@@ -65,6 +69,7 @@ function Shop() {
     })
   }
 
+  // update shop
   const updateShop = () => {
     console.log('updateShop shopId',shopId)
     Axios.put('http://localhost:3001/shop',{
@@ -89,6 +94,7 @@ function Shop() {
     cancelUpdate()
   }
 
+  // delete shop
   const deleteShop = (id) => {
     
     console.log('deleteShop shopId',id)
@@ -97,6 +103,7 @@ function Shop() {
     
   } 
 
+  // confirm to delete shop
   const confirmDeleteShop = (id) => {
     console.log('confirmDeleteShop shopId',id)
     confirmAlert({
@@ -115,6 +122,7 @@ function Shop() {
 
   }
 
+  // clear value input
   const cancelUpdate = () => {
     $('#shop_name').val('');
     $('#shop_desc').val('');
@@ -156,11 +164,11 @@ function Shop() {
       <table className="table table-striped">
         <thead>
           <tr>
-            <td>Name</td>
-            <td>Description</td>
-            <td>Tel</td>
-            <td>Address</td>
-            <td></td>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Tel</th>
+            <th>Address</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>

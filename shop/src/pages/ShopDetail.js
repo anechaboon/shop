@@ -19,6 +19,7 @@ function ShopDetail() {
     const [iconList, setIconList] = useState([])
     
 
+    // get shop data and shop product
     const getShopData = () => {
         const queryParams = new URLSearchParams(window.location.search)
         const id = queryParams.get("id")
@@ -40,7 +41,7 @@ function ShopDetail() {
     }
     getShopData()
 
-
+    // update shop data
     const updateShop = () => {
         console.log('updateShop shopId',shopId)
         Axios.put('http://localhost:3001/shop',{
@@ -52,6 +53,7 @@ function ShopDetail() {
         })
     }
 
+    // clear value input
     const cancelUpdate = () => {
         $('#shop_name').val('');
         $('#shop_desc').val('');
@@ -61,51 +63,54 @@ function ShopDetail() {
         $('#btn-cancel').addClass( "hide" );
     }
 
+    // add product to shop
     const AddShopProduct = (productId) => {
         const queryParams = new URLSearchParams(window.location.search)
         const shopId = queryParams.get("id")
         const qty = $(`tr[data-id="${productId}"] > td.qty > input.qty`).val()
-        Axios.get(`http://localhost:3001/shopProduct?product_id=${productId}&shop_id=${shopId}`).then((response) => {
-            if(response.data.status == 'found'){
-                console.log('qty',qty)
-                console.log('productId',productId)
+        if(qty != ''){
+            // check has row product in tb 
+            Axios.get(`http://localhost:3001/shopProduct?product_id=${productId}&shop_id=${shopId}`).then((response) => {
 
-                Axios.put('http://localhost:3001/addShopProduct',{
-                    product_id:productId,
-                    shop_id:shopId,
-                    qty:qty,
-                }).then((response) => {
+                if(response.data.status == 'found'){
+                    // update data
+                    Axios.put('http://localhost:3001/addShopProduct',{
+                        product_id:productId,
+                        shop_id:shopId,
+                        qty:qty,
+                    }).then((response) => {
+                        renderTable(productId)
+                    })
                     
-                })
-                
-            }else{
-                Axios.post('http://localhost:3001/addShopProduct',{
-                    product_id:productId,
-                    shop_id:shopId,
-                    qty:qty,
-                }).then((response) => {
-                    
-                })
-            }
-        })
-
-        setProductList(
-            productList.map((val) => {
-                return val.id == productId ? {
-                    id: val.id,
-                    product_name:val.product_name,
-                    product_desc:val.product_desc,
-                    product_price:val.product_price,
-                    product_unit:val.product_unit,
-                    cate_name:val.cate_name,
-                    spId:shopId,
-                } : val;
+                }else{
+                    // insert new 
+                    Axios.post('http://localhost:3001/addShopProduct',{
+                        product_id:productId,
+                        shop_id:shopId,
+                        qty:qty,
+                    }).then((response) => {
+                        renderTable(productId)
+                    })
+                }
             })
-        )
-
+            
+        }else{
+            // alert validate value
+            confirmAlert({
+                title: 'Validate Quantity',
+                message: 'Please Input Quantity.',
+                buttons: [
+                {
+                    label: 'Ok',
+                }
+                
+            ]
+            });
+        }
         
     }
 
+    // remove product from shop
     const RemoveShopProduct = (productId) => {
         const queryParams = new URLSearchParams(window.location.search)
         const shopId = queryParams.get("id")
@@ -130,6 +135,22 @@ function ShopDetail() {
         })
     }
 
+    // show data after add or remove product from shop
+    const renderTable = (productId) => {
+        setProductList(
+            productList.map((val) => {
+                return val.id == productId ? {
+                    id: val.id,
+                    product_name:val.product_name,
+                    product_desc:val.product_desc,
+                    product_price:val.product_price,
+                    product_unit:val.product_unit,
+                    cate_name:val.cate_name,
+                    spId:shopId,
+                } : val;
+            })
+        )
+    }
 
     return (
         <div className="App container">
@@ -159,11 +180,11 @@ function ShopDetail() {
         <table className="table table-striped">
             <thead>
             <tr>
-                <th>Category</th>
                 <th>Name</th>
                 <th>Description</th>
                 <th>Price</th>
                 <th>Unit</th>
+                <th>Category</th>
                 <th></th>
             </tr>
             </thead>
@@ -171,21 +192,23 @@ function ShopDetail() {
                 {productList.map((val, key) => {
                     let action =  <FontAwesomeIcon id={val.id} className="add hover" onClick={() => AddShopProduct(val.id)}  icon={faPlus} title="Add to Shop"/> 
                     let disabledQty = '';
-                    if(val.spId != null && val.deleted_at == null){
+                    let qty = null;
+                    console.log(`shopId ${shopId} | spId ${val.spId} ${val.product_name}`);
+
+                    if(val.spId != null && val.spId == shopId && val.deleted_at == null){
+                        qty = val.qty
                         disabledQty = 'readonly';
                         action =  <FontAwesomeIcon id={val.id} className="remove hover" onClick={() => RemoveShopProduct(val.id)}  icon={faXmark} title="Remove from Shop"/> 
-                    }else{
-                        val.qty = null;
                     }
                     return (
                         <tr data-id={val.id}>
-                            <td>{val.cate_name}</td>
                             <td>{val.product_name}</td>
                             <td>{val.product_desc}</td>
                             <td>{val.product_price}</td>
                             <td>{val.product_unit}</td>
+                            <td>{val.cate_name}</td>
                             <td className='qty'>     
-                                <input type="number" className="form-control qty" placeholder="Enter Quantity" value={val.qty} readOnly={disabledQty}></input>
+                                <input type="number" className="form-control qty" placeholder="Enter Quantity" value={qty} readOnly={disabledQty}></input>
                             </td>
                             <td className='action'>{action}</td>
                         </tr>

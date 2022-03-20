@@ -17,19 +17,21 @@ function Products() {
   const [categoryList, setCategoryList] = useState([])
   const [showProducts, setShowProducts] = useState(false)
 
+  // get all product
   const getProducts = () => {
     if(!showProducts){
       setShowProducts(true)
       Axios.get('http://localhost:3001/products').then((response) => {
         setProductList(response.data)
       })
-      Axios.get('http://localhost:3001/category').then((response) => {
+      Axios.get('http://localhost:3001/categories').then((response) => {
         setCategoryList(response.data)
       })
     }
   }
   getProducts()
 
+  // add new product
   const addProduct = () => {
     Axios.post('http://localhost:3001/product', {
       product_name:productName,
@@ -52,8 +54,10 @@ function Products() {
         }
       ])
     });
+    cancelUpdate()
   }
 
+  // get data product to edit
   const editProduct = (id) => {
     Axios.get(`http://localhost:3001/product?id=${id}`).then((response) => {
       const data = response.data[0]
@@ -75,6 +79,7 @@ function Products() {
     })
   }
 
+  // update product
   const updateProduct = () => {
     console.log('updateProduct productId',productId)
     Axios.put('http://localhost:3001/product',{
@@ -101,6 +106,7 @@ function Products() {
     cancelUpdate()
   }
 
+  // delete product
   const deleteProduct = (id) => {
     
     console.log('deleteProduct productId',id)
@@ -109,8 +115,8 @@ function Products() {
     
   } 
 
+  // confirm to delete product
   const confirmDeleteProduct = (id) => {
-    console.log('confirmDeleteProduct productId',id)
     confirmAlert({
       title: 'Confirm to submit',
       message: 'Are you sure to do Delete Product.',
@@ -127,6 +133,7 @@ function Products() {
 
   }
 
+  // clear value input
   const cancelUpdate = () => {
     $('#product_name').val('');
     $('#product_desc').val('');
@@ -183,12 +190,12 @@ function Products() {
       <table className="table table-striped">
         <thead>
           <tr>
-            <td>Name</td>
-            <td>Description</td>
-            <td>Price</td>
-            <td>Unit</td>
-            <td>Categoty</td>
-            <td></td>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Price</th>
+            <th>Unit</th>
+            <th>Categoty</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
