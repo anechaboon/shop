@@ -192,11 +192,13 @@ app.delete('/shop', (req, res) => {
 
 ///////// Shop /////////
 
-app.get('/shopProduct', (req, res) => {
+app.get('/shopProducts', (req, res) => {
     let id = req.query.shopId;
     const query = `SELECT sp.id as spId,
                     p.*, 
-                    pc.cate_name
+                    pc.cate_name,
+                    sp.deleted_at,
+                    sp.qty
                     FROM product p 
                     JOIN product_category pc on p.category_id = pc.id
                     LEFT JOIN shop_product sp on p.id = sp.product_id
@@ -208,6 +210,82 @@ app.get('/shopProduct', (req, res) => {
             res.send(result)
         }
     })
+})
+
+// check in shop product exist
+app.get('/shopProduct', (req, res) => {
+    let product_id = req.query.product_id;
+    let shop_id = req.query.shop_id;
+    let qty = req.query.qty;
+    const query = `SELECT * FROM shop_product 
+                    WHERE product_id = ${product_id} AND 
+                        shop_id = ${shop_id}`;
+    db.query(query, (err, result) => {
+        if(err){
+            console.log(err)
+        }else{
+            let response = {}
+            if(result[0]){
+                response = {status:'found'}
+            }else{
+                response = {status:'notfound'}
+            }
+
+            res.send(response)
+        }
+    })
+    
+})
+
+// add to shop product
+app.post('/addShopProduct', (req, res) => {
+    let shop_id = req.body.shop_id;
+    let product_id = req.body.product_id;
+    let qty = req.body.qty;
+    db.query("INSERT INTO shop_product (qty, shop_id, product_id) VALUES (?, ?, ?) ", [qty, shop_id, product_id],  (error, results, fields) => {
+        if (error) throw error;
+        let message = ""
+        if(results.changedRows == 0){
+            message = "shop not found or data same "
+        }else{
+            message = "Succesfully insert shop product"
+        }
+        return res.send({ error: false, data: results, message: message});
+    });
+})
+
+// update shop product
+app.put('/addShopProduct', (req, res) => {
+    let shop_id = req.body.shop_id;
+    let product_id = req.body.product_id;
+    let qty = req.body.qty;
+    db.query("UPDATE shop_product SET qty = ? , deleted_at = NULL WHERE shop_id = ? AND product_id = ?", [qty, shop_id, product_id],  (error, results, fields) => {
+        if (error) throw error;
+        let message = ""
+        if(results.changedRows == 0){
+            message = "shop not found or data same "
+        }else{
+            message = "Succesfully updated shop product"
+        }
+        return res.send({ error: false, data: results, message: message});
+    });
+})
+
+// update shop product
+app.put('/addShopProduct', (req, res) => {
+    let shop_id = req.body.shop_id;
+    let product_id = req.body.product_id;
+    let qty = req.body.qty;
+    db.query("UPDATE shop_product SET qty = ? , deleted_at = NULL WHERE shop_id = ? AND product_id = ?", [qty, shop_id, product_id],  (error, results, fields) => {
+        if (error) throw error;
+        let message = ""
+        if(results.changedRows == 0){
+            message = "shop not found or data same "
+        }else{
+            message = "Succesfully updated shop product"
+        }
+        return res.send({ error: false, data: results, message: message});
+    });
 })
 
 

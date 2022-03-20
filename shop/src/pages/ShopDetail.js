@@ -31,7 +31,7 @@ function ShopDetail() {
                 setShopTel(data.shop_tel)
                 setShopAddress(data.shop_address)
             })
-            Axios.get(`http://localhost:3001/shopProduct?shopId=${id}`).then((response) => {
+            Axios.get(`http://localhost:3001/shopProducts?shopId=${id}`).then((response) => {
                 setProductList(response.data)
             })
         }
@@ -61,11 +61,11 @@ function ShopDetail() {
     const updateShop = () => {
         console.log('updateShop shopId',shopId)
         Axios.put('http://localhost:3001/shop',{
-        shop_name:shopName,
-        shop_desc:shopDesc,
-        shop_tel:shopDesc,
-        shop_address:shopAddress,
-        id:shopId
+            shop_name:shopName,
+            shop_desc:shopDesc,
+            shop_tel:shopDesc,
+            shop_address:shopAddress,
+            id:shopId
         })
         cancelUpdate()
     }
@@ -82,22 +82,29 @@ function ShopDetail() {
     const AddShopProduct = (productId) => {
         const queryParams = new URLSearchParams(window.location.search)
         const shopId = queryParams.get("id")
-        Axios.put('http://localhost:3001/addShopProduct',{
-            product_id:productId,
-            shop_id:shopId,
-        }).then((response) => {
-            setProductList(
-                productList.map((val) => {
-                    return val.id == productId ? {
-                        id: val.id,
-                        product_name:val.product_name,
-                        product_desc:val.product_desc,
-                        product_price:val.product_price,
-                        product_unit:val.product_unit,
-                        spId:shopId,
-                    } : val;
+        const qty = $(`tr[data-id="${productId}"] > td.qty > input.qty`).val()
+        Axios.get(`http://localhost:3001/shopProduct?product_id=${productId}&shop_id=${shopId}`).then((response) => {
+            if(response.data.status == 'found'){
+                console.log('qty',qty)
+                console.log('productId',productId)
+
+                Axios.put('http://localhost:3001/addShopProduct',{
+                    product_id:productId,
+                    shop_id:shopId,
+                    qty:qty,
+                }).then((response) => {
+                    
                 })
-            )
+                
+            }else{
+                Axios.post('http://localhost:3001/addShopProduct',{
+                    product_id:productId,
+                    shop_id:shopId,
+                    qty:qty,
+                }).then((response) => {
+                    
+                })
+            }
         })
 
         setProductList(
@@ -112,11 +119,15 @@ function ShopDetail() {
                 } : val;
             })
         )
+
+        
     }
 
     const RemoveShopProduct = (productId) => {
         const queryParams = new URLSearchParams(window.location.search)
         const shopId = queryParams.get("id")
+
+        
         setProductList(
             productList.map((val) => {
                 return val.id == productId ? {
@@ -156,7 +167,6 @@ function ShopDetail() {
             <button type='button' className="btn btn-secondary pull-r me-3" id="btn-cancel" onClick={cancelUpdate}>Cancel</button>
         </div>
 
-
         <table className="table table-striped">
             <thead>
             <tr>
@@ -169,22 +179,27 @@ function ShopDetail() {
             </tr>
             </thead>
             <tbody>
-            {productList.map((val, key) => {
-                let action =  <FontAwesomeIcon id={val.id} className="add hover" onClick={() => AddShopProduct(val.id)}  icon={faPlus}/> 
-                if(val.spId != null){
-                    action =  <FontAwesomeIcon id={val.id} className="remove hover" onClick={() => RemoveShopProduct(val.id)}  icon={faXmark}/> 
-                }
-                return (
-                <tr data-id={val.id}>
-                    <td>{val.cate_name}</td>
-                    <td>{val.product_name}</td>
-                    <td>{val.product_desc}</td>
-                    <td>{val.product_price}</td>
-                    <td>{val.product_unit}</td>
-                    <td className='action'>{action}</td>
-                </tr>
-                )
-            })}
+                {productList.map((val, key) => {
+                    let action =  <FontAwesomeIcon id={val.id} className="add hover" onClick={() => AddShopProduct(val.id)}  icon={faPlus}/> 
+                    let disabledQty = '';
+                    if(val.spId != null && val.deleted_at == null){
+                        disabledQty = 'readonly';
+                        action =  <FontAwesomeIcon id={val.id} className="remove hover" onClick={() => RemoveShopProduct(val.id)}  icon={faXmark}/> 
+                    }
+                    return (
+                    <tr data-id={val.id}>
+                        <td>{val.cate_name}</td>
+                        <td>{val.product_name}</td>
+                        <td>{val.product_desc}</td>
+                        <td>{val.product_price}</td>
+                        <td>{val.product_unit}</td>
+                        <td className='qty'>             
+                            <input type="number" className="form-control qty" placeholder="Enter Quantity" value={val.qty} readOnly={disabledQty}></input>
+                        </td>
+                        <td className='action'>{action}</td>
+                    </tr>
+                    )
+                })}
             </tbody>
         </table>
 
