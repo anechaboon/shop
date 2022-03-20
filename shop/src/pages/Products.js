@@ -11,7 +11,7 @@ function Products() {
   const [productDesc, setProductDesc] = useState("");
   const [productPrice, setProductPrice] = useState("");
   const [productUnit, setProductUnit] = useState("");
-  const [productCate, setProductCate] = useState(1);
+  const [productCate, setProductCate] = useState("");
   
   const [productList, setProductList] = useState([])
   const [categoryList, setCategoryList] = useState([])
@@ -38,7 +38,9 @@ function Products() {
       product_unit:productUnit,
       category_id:productCate,
       
-    }).then(() => {
+    }).then((response) => {
+      console.log(response)
+      console.log(response.data.cate_name)
       setProductList([
         ...productList,
         {
@@ -46,7 +48,7 @@ function Products() {
           product_desc:productDesc,
           product_price:productPrice,
           product_unit:productUnit,
-          category_name:productCate
+          cate_name:response.data.cate_name
         }
       ])
     });
@@ -65,6 +67,7 @@ function Products() {
       setProductDesc(data.product_desc);
       setProductPrice(data.product_price);
       setProductUnit(data.product_unit);
+      setProductCate(data.category_id)
       setProductId(id);
 
       $('#btn-update').removeClass( "hide" );
@@ -79,6 +82,7 @@ function Products() {
       product_desc:productDesc,
       product_price:productPrice,
       product_unit:productUnit,
+      category_id:productCate,
       id:productId
     }).then((response) => {
       setProductList(
@@ -89,6 +93,7 @@ function Products() {
             product_desc:productDesc,
             product_price:productPrice,
             product_unit:productUnit,
+            cate_name:response.data.cate_name
           } : val;
         })
       )
@@ -127,6 +132,7 @@ function Products() {
     $('#product_desc').val('');
     $('#product_price').val('');
     $('#product_unit').val('');
+    $('#product_cate').val('');
     $('#btn-update').addClass( "hide" );
     $('#btn-cancel').addClass( "hide" );
   } 
@@ -157,7 +163,8 @@ function Products() {
           </div>
           <div className="mb-3">
             <label htmlFor="name" className="form-label">Category</label>
-            <select className="form-control" onChange={(event)=>{setProductCate(event.target.value)}}>
+            <select id="product_cate" className="form-control" onChange={(event)=>{setProductCate(event.target.value)}} value={productCate}>
+              <option value="">Select Category Product</option>
               {categoryList.map((val, key) => {
                 return (
                   <option value={val.id}>{val.cate_name}</option>

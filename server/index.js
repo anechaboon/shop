@@ -28,7 +28,7 @@ app.get('/products', (req, res) => {
 // get product by id
 app.get('/product', (req, res) => {
     let id = req.query.id;
-    db.query(`SELECT * FROM product WHERE id = ${id}`, (err, result) => {
+    db.query(`SELECT p.*, pc.cate_name FROM product p JOIN product_category pc on p.category_id = pc.id WHERE p.id = ${id}`, (err, result) => {
         if(err){
             console.log(err)
         }else{
@@ -44,16 +44,25 @@ app.post('/product', (req, res) => {
     let price = req.body.product_price;
     let unit = req.body.product_unit;
     let category_id = req.body.category_id;
-
+    let cate_name = '';
     //validate
     if(!name || !price || !unit){
         return res.status(400).send({ error: true, message: "please provide product name, price and unit"});
     }else{
+        db.query(`SELECT cate_name FROM product_category WHERE id = ${category_id}`, (err, result) => {
+            if(err){
+                console.log(err)
+            }else{
+                if(result[0]){
+                    cate_name = result[0].cate_name
+                }
+            }
+        })
+
         db.query("INSERT INTO product (product_name, product_desc, product_price, product_unit, category_id) VALUES(?, ?, ?, ?, ?) ", [name, desc, price, unit, category_id], (error, results, fields) => {
             if (error) throw error;
             let message = ""
-            return res.send({ error: false, data: results, message: "add new Product succesfully"});
-
+            return res.send({ error: false, data: results, message: "add new Product succesfully", cate_name:cate_name});
         });
     }
 });
@@ -65,11 +74,23 @@ app.put('/product', (req, res) => {
     let desc = req.body.product_desc;
     let price = req.body.product_price;
     let unit = req.body.product_unit;
-
+    let category_id = req.body.category_id;
+    let cate_name = '';
+    
     if(!name || !price || !unit){
         return res.status(400).send({ error: true, message: "please provide product name, price and unit"});
     }else{
-        db.query("UPDATE product SET product_name = ?, product_desc = ?, product_price = ?, product_unit = ? WHERE id = ?", [name, desc, price, unit, id],  (error, results, fields) => {
+        db.query(`SELECT cate_name FROM product_category WHERE id = ${category_id}`, (err, result) => {
+            if(err){
+                console.log(err)
+            }else{
+                if(result[0]){
+                    cate_name = result[0].cate_name
+                }
+            }
+        })
+
+        db.query("UPDATE product SET product_name = ?, product_desc = ?, product_price = ?, product_unit = ?, category_id = ? WHERE id = ?", [name, desc, price, unit, category_id, id],  (error, results, fields) => {
             if (error) throw error;
             let message = ""
             if(results.changedRows == 0){
@@ -77,7 +98,7 @@ app.put('/product', (req, res) => {
             }else{
                 message = "Succesfully updated product"
             }
-            return res.send({ error: false, data: results, message: message});
+            return res.send({ error: false, data: results, message: message, cate_name:cate_name});
         });
     }
 });
