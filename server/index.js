@@ -16,7 +16,7 @@ const db = mysql.createConnection({
 ///////// Product /////////
 // get all product
 app.get('/products', (req, res) => {
-    db.query("SELECT * FROM product", (err, result) => {
+    db.query("SELECT p.*, pc.cate_name FROM product p JOIN product_category pc on p.category_id = pc.id", (err, result) => {
         if(err){
             console.log(err)
         }else{
@@ -43,12 +43,13 @@ app.post('/product', (req, res) => {
     let desc = req.body.product_desc;
     let price = req.body.product_price;
     let unit = req.body.product_unit;
+    let category_id = req.body.category_id;
 
     //validate
     if(!name || !price || !unit){
         return res.status(400).send({ error: true, message: "please provide product name, price and unit"});
     }else{
-        db.query("INSERT INTO product (product_name, product_desc, product_price, product_unit) VALUES(?, ?, ?, ?) ", [name, desc, price, unit], (error, results, fields) => {
+        db.query("INSERT INTO product (product_name, product_desc, product_price, product_unit, category_id) VALUES(?, ?, ?, ?, ?) ", [name, desc, price, unit, category_id], (error, results, fields) => {
             if (error) throw error;
             let message = ""
             return res.send({ error: false, data: results, message: "add new Product succesfully"});
@@ -272,11 +273,11 @@ app.put('/addShopProduct', (req, res) => {
 })
 
 // update shop product
-app.put('/addShopProduct', (req, res) => {
+app.put('/removeShopProduct', (req, res) => {
     let shop_id = req.body.shop_id;
     let product_id = req.body.product_id;
-    let qty = req.body.qty;
-    db.query("UPDATE shop_product SET qty = ? , deleted_at = NULL WHERE shop_id = ? AND product_id = ?", [qty, shop_id, product_id],  (error, results, fields) => {
+
+    db.query("UPDATE shop_product SET deleted_at = NOW() WHERE shop_id = ? AND product_id = ?", [ shop_id, product_id],  (error, results, fields) => {
         if (error) throw error;
         let message = ""
         if(results.changedRows == 0){
@@ -286,6 +287,17 @@ app.put('/addShopProduct', (req, res) => {
         }
         return res.send({ error: false, data: results, message: message});
     });
+})
+
+// get category 
+app.get('/category', (req, res) => {
+    db.query("SELECT * FROM product_category", (err, result) => {
+        if(err){
+            console.log(err)
+        }else{
+            res.send(result)
+        }
+    })
 })
 
 

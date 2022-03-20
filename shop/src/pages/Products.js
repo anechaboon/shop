@@ -11,8 +11,10 @@ function Products() {
   const [productDesc, setProductDesc] = useState("");
   const [productPrice, setProductPrice] = useState("");
   const [productUnit, setProductUnit] = useState("");
-
+  const [productCate, setProductCate] = useState(1);
+  
   const [productList, setProductList] = useState([])
+  const [categoryList, setCategoryList] = useState([])
   const [showProducts, setShowProducts] = useState(false)
 
   const getProducts = () => {
@@ -20,6 +22,9 @@ function Products() {
       setShowProducts(true)
       Axios.get('http://localhost:3001/products').then((response) => {
         setProductList(response.data)
+      })
+      Axios.get('http://localhost:3001/category').then((response) => {
+        setCategoryList(response.data)
       })
     }
   }
@@ -31,6 +36,8 @@ function Products() {
       product_desc:productDesc,
       product_price:productPrice,
       product_unit:productUnit,
+      category_id:productCate,
+      
     }).then(() => {
       setProductList([
         ...productList,
@@ -39,6 +46,7 @@ function Products() {
           product_desc:productDesc,
           product_price:productPrice,
           product_unit:productUnit,
+          category_name:productCate
         }
       ])
     });
@@ -147,6 +155,17 @@ function Products() {
             <label htmlFor="name" className="form-label">Unit</label>
             <input type="text" className="form-control" placeholder="Enter Author" id="product_unit" onChange={(event)=>{setProductUnit(event.target.value)}}></input>
           </div>
+          <div className="mb-3">
+            <label htmlFor="name" className="form-label">Category</label>
+            <select className="form-control" onChange={(event)=>{setProductCate(event.target.value)}}>
+              {categoryList.map((val, key) => {
+                return (
+                  <option value={val.id}>{val.cate_name}</option>
+                )
+              })}
+
+            </select>
+          </div>
           <button className="btn btn-success" onClick={addProduct}>Add Product</button>
           <button className="btn btn-warning pull-r hide" id="btn-update" onClick={updateProduct} >Update Product</button>
           <button type='button' className="btn btn-secondary pull-r me-3 hide" id="btn-cancel" onClick={cancelUpdate}>Cancel</button>
@@ -161,6 +180,7 @@ function Products() {
             <td>Description</td>
             <td>Price</td>
             <td>Unit</td>
+            <td>Categoty</td>
             <td></td>
           </tr>
         </thead>
@@ -172,6 +192,7 @@ function Products() {
                 <td>{val.product_desc}</td>
                 <td>{val.product_price}</td>
                 <td>{val.product_unit}</td>
+                <td>{val.cate_name}</td>
                 <td>
                   {<AiIcons.AiOutlineEdit className="hover i-size-4" onClick={() => editProduct(val.id)}/>} 
                   {<AiIcons.AiOutlineDelete className="hover i-size-4" onClick={() => confirmDeleteProduct(val.id)}/>}

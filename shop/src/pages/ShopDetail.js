@@ -30,6 +30,8 @@ function ShopDetail() {
                 setShopDesc(data.shop_desc)
                 setShopTel(data.shop_tel)
                 setShopAddress(data.shop_address)
+                setShopId(id);
+
             })
             Axios.get(`http://localhost:3001/shopProducts?shopId=${id}`).then((response) => {
                 setProductList(response.data)
@@ -38,25 +40,6 @@ function ShopDetail() {
     }
     getShopData()
 
-    const editShop = (id) => {
-        Axios.get(`http://localhost:3001/shop?id=${id}`).then((response) => {
-        const data = response.data[0]
-        $('#shop_name').val(data.shop_name);
-        $('#shop_desc').val(data.shop_desc);
-        $('#shop_tel').val(data.shop_tel);
-        $('#shop_address').val(data.shop_address);
-        $('#shop_address').val(id);
-
-        setShopName(data.shop_name);
-        setShopDesc(data.shop_desc);
-        setShopTel(data.shop_tel);
-        setShopAddress(data.shop_address);
-        setShopId(id);
-
-        $('#btn-update').removeClass( "hide" );
-        $('#btn-cancel').removeClass( "hide" );
-        })
-    }
 
     const updateShop = () => {
         console.log('updateShop shopId',shopId)
@@ -67,7 +50,6 @@ function ShopDetail() {
             shop_address:shopAddress,
             id:shopId
         })
-        cancelUpdate()
     }
 
     const cancelUpdate = () => {
@@ -115,6 +97,7 @@ function ShopDetail() {
                     product_desc:val.product_desc,
                     product_price:val.product_price,
                     product_unit:val.product_unit,
+                    cate_name:val.cate_name,
                     spId:shopId,
                 } : val;
             })
@@ -126,26 +109,32 @@ function ShopDetail() {
     const RemoveShopProduct = (productId) => {
         const queryParams = new URLSearchParams(window.location.search)
         const shopId = queryParams.get("id")
-
-        
-        setProductList(
-            productList.map((val) => {
-                return val.id == productId ? {
-                    id: val.id,
-                    product_name:val.product_name,
-                    product_desc:val.product_desc,
-                    product_price:val.product_price,
-                    product_unit:val.product_unit,
-                    spId:null,
-                } : val;
-            })
-        )
+        $(`tr[data-id="${productId}"] > td.qty > input.qty`).val(null)
+        Axios.put('http://localhost:3001/removeShopProduct',{
+                    product_id:productId,
+                    shop_id:shopId,
+        }).then((response) => {
+            setProductList(
+                productList.map((val) => {
+                    return val.id == productId ? {
+                        id: val.id,
+                        product_name:val.product_name,
+                        product_desc:val.product_desc,
+                        product_price:val.product_price,
+                        product_unit:val.product_unit,
+                        cate_name:val.cate_name,
+                        spId:null,
+                    } : val;
+                })
+            )
+        })
     }
+
+
     return (
         <div className="App container">
         <h1>Shop Detail</h1>
         <div className="information">
-            
             <input type="hidden" id="shopId" onChange={(event)=>{setShopId(event.target.value)}}></input>
             <div className="mb-3">
                 <label htmlFor="name" className="form-label">Shop Name</label>
@@ -163,7 +152,7 @@ function ShopDetail() {
                 <label htmlFor="name" className="form-label">Address</label>
                 <input type="text" className="form-control" placeholder="Enter Address" id="shop_address" onChange={(event)=>{setShopAddress(event.target.value)}} value={shopAddress}></input>
             </div>
-            <button className="btn btn-warning pull-r" id="btn-update" onClick={updateShop} >Update Shop</button>
+            <button type='button' className="btn btn-warning pull-r" id="btn-update" onClick={updateShop} >Update Shop</button>
             <button type='button' className="btn btn-secondary pull-r me-3" id="btn-cancel" onClick={cancelUpdate}>Cancel</button>
         </div>
 
@@ -180,24 +169,26 @@ function ShopDetail() {
             </thead>
             <tbody>
                 {productList.map((val, key) => {
-                    let action =  <FontAwesomeIcon id={val.id} className="add hover" onClick={() => AddShopProduct(val.id)}  icon={faPlus}/> 
+                    let action =  <FontAwesomeIcon id={val.id} className="add hover" onClick={() => AddShopProduct(val.id)}  icon={faPlus} title="Add to Shop"/> 
                     let disabledQty = '';
                     if(val.spId != null && val.deleted_at == null){
                         disabledQty = 'readonly';
-                        action =  <FontAwesomeIcon id={val.id} className="remove hover" onClick={() => RemoveShopProduct(val.id)}  icon={faXmark}/> 
+                        action =  <FontAwesomeIcon id={val.id} className="remove hover" onClick={() => RemoveShopProduct(val.id)}  icon={faXmark} title="Remove from Shop"/> 
+                    }else{
+                        val.qty = null;
                     }
                     return (
-                    <tr data-id={val.id}>
-                        <td>{val.cate_name}</td>
-                        <td>{val.product_name}</td>
-                        <td>{val.product_desc}</td>
-                        <td>{val.product_price}</td>
-                        <td>{val.product_unit}</td>
-                        <td className='qty'>             
-                            <input type="number" className="form-control qty" placeholder="Enter Quantity" value={val.qty} readOnly={disabledQty}></input>
-                        </td>
-                        <td className='action'>{action}</td>
-                    </tr>
+                        <tr data-id={val.id}>
+                            <td>{val.cate_name}</td>
+                            <td>{val.product_name}</td>
+                            <td>{val.product_desc}</td>
+                            <td>{val.product_price}</td>
+                            <td>{val.product_unit}</td>
+                            <td className='qty'>     
+                                <input type="number" className="form-control qty" placeholder="Enter Quantity" value={val.qty} readOnly={disabledQty}></input>
+                            </td>
+                            <td className='action'>{action}</td>
+                        </tr>
                     )
                 })}
             </tbody>
