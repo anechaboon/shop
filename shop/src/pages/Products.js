@@ -173,8 +173,8 @@ function Products() {
                 <td>{val.product_price}</td>
                 <td>{val.product_unit}</td>
                 <td>
-                  {<AiIcons.AiOutlineEdit className="hover" onClick={() => editProduct(val.id)}/>} 
-                  {<AiIcons.AiOutlineDelete className="hover" onClick={() => confirmDeleteProduct(val.id)}/>}
+                  {<AiIcons.AiOutlineEdit className="hover i-size-4" onClick={() => editProduct(val.id)}/>} 
+                  {<AiIcons.AiOutlineDelete className="hover i-size-4" onClick={() => confirmDeleteProduct(val.id)}/>}
                 </td>
               </tr>
             )

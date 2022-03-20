@@ -32,3 +32,6 @@
 .hover:hover{
   cursor: pointer;
 }
+.i-size-4{
+  font-size: 4vh;
+}
